@@ -1,0 +1,27 @@
+server:
+  port: 8109
+
+spring:
+  application:
+    name: review-service
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:13306}/mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+mall:
+  services:
+    order: ${ORDER_SERVICE_URL:http://localhost:8105}
+    user: ${USER_SERVICE_URL:http://localhost:8101}
+
+logging:
+  level:
+    com.comonon.mall.review: INFO

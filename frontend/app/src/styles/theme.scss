@@ -1,0 +1,241 @@
+/* ComonOn C 端 — Meko Fashion 极简时尚电商风格 */
+
+$color-primary: #1a1a1a;
+$color-accent: #c9a96e;
+$color-sale: #c45c4a;
+$color-primary-light: #f5f5f5;
+$color-bg-page: #ffffff;
+$color-bg-section: #f7f7f7;
+$color-bg-card: #ffffff;
+$color-text-primary: #1a1a1a;
+$color-text-secondary: #8e8e8e;
+$color-text-disabled: #c4c4c4;
+$color-border: #eeeeee;
+$color-shadow: rgba(0, 0, 0, 0.04);
+
+$type-physical: #5c6bc0;
+$type-virtual: #7e57c2;
+$type-service: #d4a056;
+
+$radius-card: 4rpx;
+$radius-chip: 4rpx;
+$radius-pill: 999rpx;
+$radius-btn: 999rpx;
+
+$spacing-page: 32rpx;
+$spacing-card: 32rpx;
+$tab-bar-height: 50px;
+
+$gradient-primary: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+$gradient-soft: #ffffff;
+
+@mixin page-header-bg {
+  background: $color-bg-page;
+}
+
+@mixin accent-bar {
+  width: 32rpx;
+  height: 2rpx;
+  background: $color-primary;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+@mixin section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28rpx;
+}
+
+@mixin section-header-title {
+  display: flex;
+  align-items: center;
+  font-size: 30rpx;
+  font-weight: 500;
+  letter-spacing: 2rpx;
+  color: $color-text-primary;
+  text-transform: uppercase;
+}
+
+@mixin menu-cell {
+  display: flex;
+  align-items: center;
+  padding: 32rpx 28rpx;
+  background: $color-bg-card;
+
+  &:not(:last-child) {
+    border-bottom: 1rpx solid $color-border;
+  }
+}
+
+@mixin image-cover {
+  background: #f0f0f0;
+}
+
+@mixin promo-banner {
+  margin: 0 0 32rpx;
+  overflow: hidden;
+}
+
+@mixin chip-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 10rpx 24rpx;
+  border-radius: $radius-pill;
+  font-size: 22rpx;
+  background: transparent;
+  color: $color-text-secondary;
+  border: 1rpx solid $color-border;
+
+  &.active {
+    background: $color-primary;
+    color: #fff;
+    border-color: $color-primary;
+  }
+}
+
+@mixin stepper-btn {
+  width: 56rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  text-align: center;
+  background: #fff;
+  border-radius: 0;
+  font-size: 28rpx;
+  color: $color-text-primary;
+  border: 1rpx solid $color-border;
+}
+
+@mixin page-shell {
+  min-height: 100vh;
+  background: $color-bg-page;
+  box-sizing: border-box;
+}
+
+@mixin card {
+  background: $color-bg-card;
+  border-radius: $radius-card;
+  border: 1rpx solid $color-border;
+  box-shadow: none;
+}
+
+@mixin section-title {
+  font-size: 30rpx;
+  font-weight: 500;
+  letter-spacing: 2rpx;
+  color: $color-text-primary;
+  margin: 8rpx 0 28rpx;
+  text-transform: uppercase;
+}
+
+@mixin price-text($size: 28rpx) {
+  color: $color-text-primary;
+  font-size: $size;
+  font-weight: 500;
+  letter-spacing: 1rpx;
+}
+
+@mixin btn-primary {
+  background: $color-primary;
+  color: #fff;
+  border-radius: $radius-btn;
+  border: none;
+  letter-spacing: 2rpx;
+  &::after {
+    border: none;
+  }
+}
+
+@mixin btn-outline {
+  background: #fff;
+  color: $color-primary;
+  border: 2rpx solid $color-primary;
+  border-radius: $radius-btn;
+  letter-spacing: 2rpx;
+  &::after {
+    border: none;
+  }
+}
+
+@mixin fixed-footer($above-tab-bar: false) {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: if($above-tab-bar, calc(#{$tab-bar-height} + env(safe-area-inset-bottom)), 0);
+  z-index: 900;
+  background: #fff;
+  padding: 20rpx $spacing-page calc(20rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid $color-border;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+@function type-color($type) {
+  @if $type == 'VIRTUAL' {
+    @return $type-virtual;
+  } @else if $type == 'SERVICE' {
+    @return $type-service;
+  }
+  @return $type-physical;
+}
+
+@mixin tab-bar {
+  display: flex;
+  background: $color-bg-card;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1rpx solid $color-border;
+}
+
+@mixin tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 28rpx 0;
+  font-size: 26rpx;
+  color: $color-text-secondary;
+  position: relative;
+  letter-spacing: 1rpx;
+
+  &.active {
+    color: $color-primary;
+    font-weight: 500;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 32rpx;
+      height: 2rpx;
+      background: $color-primary;
+    }
+  }
+}
+
+@mixin form-card {
+  @include card;
+  padding: 8rpx $spacing-card;
+}
+
+@mixin form-field {
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid $color-border;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+@mixin tag-default {
+  font-size: 20rpx;
+  color: $color-text-primary;
+  background: $color-primary-light;
+  border-radius: $radius-chip;
+  padding: 4rpx 12rpx;
+  letter-spacing: 1rpx;
+}

@@ -1,0 +1,41 @@
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
+  color: var(--admin-color-text);
+  background: var(--admin-color-bg);
+}
+
+.el-main {
+  background: var(--admin-color-bg);
+}
+
+.el-card {
+  border-radius: 4px;
+  border-color: var(--admin-color-border);
+}
+
+.el-button--primary {
+  --el-button-hover-bg-color: var(--el-color-primary-light-3);
+  --el-button-hover-border-color: var(--el-color-primary-light-3);
+  --el-button-active-bg-color: var(--el-color-primary-dark-2);
+  --el-button-active-border-color: var(--el-color-primary-dark-2);
+}
+
+.el-button.is-link {
+  --el-button-text-color: var(--admin-color-primary);
+}
+
+.el-menu-item.is-active {
+  font-weight: 600;
+}
+
+a {
+  color: var(--admin-color-primary);
+}
+
+a:hover {
+  color: var(--admin-color-accent);
+}

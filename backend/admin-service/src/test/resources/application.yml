@@ -1,0 +1,32 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  datasource:
+    url: jdbc:h2:mem:test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+mall:
+  jwt:
+    admin-secret: test-secret-must-be-at-least-32-bytes-long-xyz
+    issuer: comonon-admin
+    access-ttl-seconds: 1800
+    refresh-ttl-seconds: 86400
+  admin:
+    login:
+      max-fail: 5
+      fail-window-seconds: 600
+      lock-seconds: 1800
+    captcha:
+      ttl-seconds: 300
+      length: 4
+    challenge:
+      ttl-seconds: 300
+      sms-length: 6
+    password:
+      min-length: 10
+      history-keep: 5
+      bcrypt-cost: 4

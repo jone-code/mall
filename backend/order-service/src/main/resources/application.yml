@@ -1,0 +1,31 @@
+server:
+  port: 8105
+
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:13306}/mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+mall:
+  order:
+    timeout-seconds: 1800
+  services:
+    product: ${PRODUCT_SERVICE_URL:http://localhost:8103}
+    cart: ${CART_SERVICE_URL:http://localhost:8104}
+    user: ${USER_SERVICE_URL:http://localhost:8101}
+    pay: ${PAY_SERVICE_URL:http://localhost:8106}
+
+logging:
+  level:
+    com.comonon.mall.order: INFO

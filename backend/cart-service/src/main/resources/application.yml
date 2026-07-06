@@ -1,0 +1,23 @@
+server:
+  port: 8104
+
+spring:
+  application:
+    name: cart-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:16379}
+      database: 3
+      timeout: 3s
+
+mall:
+  cart:
+    max-lines: 50
+    max-quantity-per-line: 99
+  services:
+    product: ${PRODUCT_SERVICE_URL:http://localhost:8103}
+
+logging:
+  level:
+    com.comonon.mall.cart: INFO

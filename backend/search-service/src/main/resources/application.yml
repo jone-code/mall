@@ -1,0 +1,18 @@
+server:
+  port: 8108
+
+spring:
+  application:
+    name: search-service
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
+
+mall:
+  search:
+    index-name: mall_products
+  services:
+    product: ${PRODUCT_SERVICE_URL:http://localhost:8103}
+
+logging:
+  level:
+    com.comonon.mall.search: INFO

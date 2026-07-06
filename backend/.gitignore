@@ -1,0 +1,22 @@
+# Build outputs
+target/
+*.iml
+.idea/
+.vscode/
+*.class
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar

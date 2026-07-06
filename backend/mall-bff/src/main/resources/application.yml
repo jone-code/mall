@@ -1,0 +1,45 @@
+server:
+  port: 8001
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: mall-bff
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:16379}
+      timeout: 2s
+
+mall:
+  upload:
+    dir: ${MALL_UPLOAD_DIR:./data/uploads}
+    public-prefix: /files
+  bff:
+    auth:
+      # JWT 签名密钥，长度 >= 32 字节，生产经环境变量注入
+      jwt-secret: ${MALL_JWT_SECRET:dev_secret_please_change_to_a_long_random_string_32bytes}
+      # 鉴权放行白名单（请求路径前缀匹配）
+      whitelist:
+        - /api/sms/send
+        - /api/login/sms
+        - /api/oauth/wechat
+        - /api/token/refresh
+        - /api/captcha/verify
+        - /api/home
+        - /api/categories
+        - /api/products
+        - /api/search/products
+        - /api/reviews/spu
+    services:
+      user: ${USER_SERVICE_URL:http://localhost:8101}
+      product: ${PRODUCT_SERVICE_URL:http://localhost:8103}
+      cart: ${CART_SERVICE_URL:http://localhost:8104}
+      order: ${ORDER_SERVICE_URL:http://localhost:8105}
+      pay: ${PAY_SERVICE_URL:http://localhost:8106}
+      search: ${SEARCH_SERVICE_URL:http://localhost:8108}
+      review: ${REVIEW_SERVICE_URL:http://localhost:8109}
+
+logging:
+  level:
+    com.comonon.mall.bff: INFO

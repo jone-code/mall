@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: product-service
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:13306}/mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+server:
+  port: 8103
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+logging:
+  level:
+    com.comonon.mall.product: INFO
+
+mall:
+  services:
+    search: ${SEARCH_SERVICE_URL:http://localhost:8108}
+    order: ${ORDER_SERVICE_URL:http://localhost:8105}

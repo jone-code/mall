@@ -1,0 +1,33 @@
+$auth-primary: #1a1a1a;
+$auth-bg: #fafafa;
+$auth-wechat: #07c160;
+$auth-text: #1a1a1a;
+$auth-text-secondary: #8c8c8c;
+$auth-border: #e8e8e8;
+$auth-btn-height: 104rpx;
+$auth-btn-radius: 16rpx;
+$auth-page-padding: 48rpx 64rpx;
+
+@mixin auth-primary-btn {
+  width: 100%;
+  height: $auth-btn-height;
+  line-height: $auth-btn-height;
+  border-radius: $auth-btn-radius;
+  background: $auth-primary;
+  color: #fff;
+  font-size: 34rpx;
+  font-weight: 600;
+  border: none;
+  &::after {
+    border: none;
+  }
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+@mixin auth-page {
+  min-height: 100vh;
+  background: $auth-bg;
+  box-sizing: border-box;
+}

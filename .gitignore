@@ -1,0 +1,21 @@
+# Dependencies & build
+node_modules/
+target/
+dist/
+dist-ssr/
+.vite/
+
+# Logs
+*.log
+logs/
+deploy/logs/
+
+# OS & IDE
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+# Env (keep .env.development templates if needed locally)
+.env.local
+.env.*.local

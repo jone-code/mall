@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: user-service
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:13306}/mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:16379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+
+server:
+  port: 8101
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+mall:
+  jwt:
+    # >=32 字符的随机串；生产通过环境变量注入
+    secret: ${MALL_JWT_SECRET:dev_secret_please_change_to_a_long_random_string_32bytes}
+    access-ttl: 2h
+    refresh-ttl: 7d
+  sms:
+    code-ttl: 300s
+    cooldown: 60s
+    daily-limit: 10
+    ip-window: 5m
+    ip-limit: 20
+    max-tries: 5
+
+logging:
+  level:
+    com.comonon.mall: INFO
