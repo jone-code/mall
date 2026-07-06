@@ -20,6 +20,7 @@ import com.comonon.mall.product.service.StockService;
 import com.comonon.mall.product.vo.AdminSpuVO;
 import com.comonon.mall.product.vo.CreateSpuResultVO;
 import com.comonon.mall.product.vo.PageResult;
+import com.comonon.mall.product.vo.StockFlowVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -138,6 +139,18 @@ public class AdminProductController {
             }
         }
         return Result.ok(Map.of("count", count));
+    }
+
+    @PostMapping("/products/{id}/copy")
+    public Result<CreateSpuResultVO> copy(@PathVariable Long id, HttpServletRequest request) {
+        return Result.ok(spuService.copy(id));
+    }
+
+    @GetMapping("/skus/{skuId}/stock-flows")
+    public Result<PageResult<StockFlowVO>> stockFlows(@PathVariable Long skuId,
+                                                      @RequestParam(value = "page", defaultValue = "1") int page,
+                                                      @RequestParam(value = "size", defaultValue = "20") int size) {
+        return Result.ok(stockService.listFlows(skuId, page, size));
     }
 
     @PutMapping("/skus/{skuId}/stock")

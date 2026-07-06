@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.comonon.mall.common.api.ErrorCode;
 import com.comonon.mall.common.exception.BizException;
 import com.comonon.mall.product.domain.SpecJson;
+import com.comonon.mall.product.domain.SpecJson;
 import com.comonon.mall.product.domain.SpecTextGenerator;
 import com.comonon.mall.product.domain.SpuStatus;
 import com.comonon.mall.product.dto.CreateSpuRequest;
@@ -228,5 +229,24 @@ public class SkuService {
                 .eq(Sku::getStatus, 1)
                 .orderByDesc(Sku::getIsDefault)
                 .orderByAsc(Sku::getId));
+    }
+
+    @Transactional
+    public Long cloneSkus(Long targetSpuId, List<Sku> sourceSkus) {
+        Long firstSkuId = null;
+        for (Sku source : sourceSkus) {
+            Long skuId = insertSku(targetSpuId, source.getSkuCode(),
+                    (SpecJson) jsonHelper.parseSpec(source.getSpecJson()),
+                    source.getPrice(),
+                    source.getMarketPrice(),
+                    source.getIsDefault() == null ? 0 : source.getIsDefault(),
+                    source.getStatus() == null ? 1 : source.getStatus(),
+                    stockService.getAvailable(source.getId()));
+            if (firstSkuId == null) {
+                firstSkuId = skuId;
+            }
+        }
+        ensureSingleDefault(targetSpuId);
+        return firstSkuId;
     }
 }

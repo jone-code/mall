@@ -3,6 +3,7 @@ package com.comonon.mall.review.web;
 import com.comonon.mall.common.api.Result;
 import com.comonon.mall.review.service.ReviewService;
 import com.comonon.mall.review.vo.PageResult;
+import com.comonon.mall.review.vo.ReviewStatsVO;
 import com.comonon.mall.review.vo.ReviewVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,11 @@ import java.time.LocalDate;
 public class AdminReviewController {
 
     private final ReviewService reviewService;
+
+    @GetMapping("/stats")
+    public Result<ReviewStatsVO> stats() {
+        return Result.ok(reviewService.adminStats());
+    }
 
     @GetMapping
     public Result<PageResult<ReviewVO>> list(@RequestParam(required = false) Long spuId,

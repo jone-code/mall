@@ -4,6 +4,8 @@ import com.comonon.mall.review.entity.ReviewEntity;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class ReviewVO {
@@ -14,6 +16,7 @@ public class ReviewVO {
     private Long skuId;
     private Integer rating;
     private String content;
+    private List<String> images = new ArrayList<>();
     private String userNickname;
     private String status;
     private LocalDateTime createdAt;

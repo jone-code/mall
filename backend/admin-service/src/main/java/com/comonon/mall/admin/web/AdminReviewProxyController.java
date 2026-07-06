@@ -18,6 +18,12 @@ public class AdminReviewProxyController {
 
     private final ReviewApiProxy proxy;
 
+    @GetMapping("/reviews/stats")
+    @RequirePermission("order:read")
+    public ResponseEntity<byte[]> stats(HttpServletRequest request) {
+        return proxy.forward("/admin/reviews/stats", request, null);
+    }
+
     @GetMapping("/reviews")
     @RequirePermission("order:read")
     public ResponseEntity<byte[]> list(HttpServletRequest request) {

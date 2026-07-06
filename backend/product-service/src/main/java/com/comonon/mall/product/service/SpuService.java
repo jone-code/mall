@@ -7,7 +7,9 @@ import com.comonon.mall.product.domain.ProductType;
 import com.comonon.mall.product.domain.SpuStatus;
 import com.comonon.mall.product.dto.CreateSpuRequest;
 import com.comonon.mall.product.dto.UpdateSpuRequest;
+import com.comonon.mall.product.entity.Sku;
 import com.comonon.mall.product.entity.Spu;
+import com.comonon.mall.product.mapper.SkuMapper;
 import com.comonon.mall.product.mapper.SpuMapper;
 import com.comonon.mall.product.vo.AdminSpuVO;
 import com.comonon.mall.product.vo.CreateSpuResultVO;
@@ -26,6 +28,7 @@ import java.util.List;
 public class SpuService {
 
     private final SpuMapper spuMapper;
+    private final SkuMapper skuMapper;
     private final CategoryService categoryService;
     private final SkuService skuService;
     private final JsonHelper jsonHelper;
@@ -129,5 +132,36 @@ public class SpuService {
     public AdminSpuVO adminDetail(Long id) {
         Spu spu = requireSpu(id);
         return skuService.toAdminSpuDetail(spu);
+    }
+
+    @Transactional
+    public CreateSpuResultVO copy(Long sourceId) {
+        Spu source = requireSpu(sourceId);
+        Spu spu = new Spu();
+        spu.setCategoryId(source.getCategoryId());
+        spu.setTitle(source.getTitle() + " (副本)");
+        spu.setSubtitle(source.getSubtitle());
+        spu.setProductType(source.getProductType());
+        spu.setMainImage(source.getMainImage());
+        spu.setImages(source.getImages());
+        spu.setDetailHtml(source.getDetailHtml());
+        spu.setStatus(SpuStatus.DRAFT);
+        spu.setSortOrder(source.getSortOrder() == null ? 0 : source.getSortOrder());
+        LocalDateTime now = LocalDateTime.now();
+        spu.setCreatedAt(now);
+        spu.setUpdatedAt(now);
+        spuMapper.insert(spu);
+
+        List<Sku> sourceSkus = skuMapper.selectList(new LambdaQueryWrapper<Sku>()
+                .eq(Sku::getSpuId, sourceId)
+                .orderByAsc(Sku::getId));
+        if (sourceSkus.isEmpty()) {
+            throw BizException.of(ErrorCode.BAD_REQUEST, "源商品无 SKU，无法复制");
+        }
+        Long firstSkuId = skuService.cloneSkus(spu.getId(), sourceSkus);
+        CreateSpuResultVO vo = new CreateSpuResultVO();
+        vo.setSpuId(spu.getId());
+        vo.setSkuId(firstSkuId);
+        return vo;
     }
 }

@@ -69,6 +69,7 @@
       <el-table-column label="操作" width="260" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="openEdit(row.id)">编辑</el-button>
+          <el-button v-if="canWrite" link type="info" @click="onCopy(row.id)">复制</el-button>
           <template v-if="canWrite">
             <el-button v-if="row.status !== 1" link type="success" @click="onPublish(row.id)">
               上架
@@ -241,6 +242,36 @@
             <el-button type="primary" :loading="savingSkus" @click="saveSkus">保存 SKU</el-button>
           </div>
         </el-tab-pane>
+
+        <el-tab-pane label="库存记录" name="stock-flows">
+          <div class="stock-flow-toolbar">
+            <el-select v-model="stockFlowSkuId" placeholder="选择 SKU" style="width: 280px" @change="loadStockFlows">
+              <el-option
+                v-for="sku in skuRows.filter((s) => s.id)"
+                :key="sku.id"
+                :label="`${sku.id} · ${sku.specText || '默认规格'}`"
+                :value="sku.id!"
+              />
+            </el-select>
+            <el-button @click="loadStockFlows">刷新</el-button>
+          </div>
+          <el-table v-loading="stockFlowLoading" :data="stockFlows" size="small" stripe>
+            <el-table-column prop="changeType" label="类型" width="110" />
+            <el-table-column label="可用变动" width="90" align="right">
+              <template #default="{ row }">{{ row.deltaAvailable ?? 0 }}</template>
+            </el-table-column>
+            <el-table-column label="变更后可用" width="100" align="right">
+              <template #default="{ row }">{{ row.availableAfter ?? 0 }}</template>
+            </el-table-column>
+            <el-table-column prop="orderNo" label="订单号" min-width="160" />
+            <el-table-column prop="operatorId" label="操作人" width="100" />
+            <el-table-column label="时间" min-width="120">
+              <template #default="{ row }">
+                <RelativeTime :value="row.createdAt" />
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
       </el-tabs>
     </div>
   </el-drawer>
@@ -251,17 +282,20 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/api/http'
 import {
+  copyProduct,
   deleteSku,
   flattenLevel2Categories,
   getProduct,
   listCategories,
   listProducts,
+  listStockFlows,
   productTypeLabel,
   saveSkus as saveSkusApi,
   spuStatusLabel,
   updateProduct,
   type AdminSpu,
-  type CategoryNode
+  type CategoryNode,
+  type StockFlowRow
 } from '@/api/product'
 import SkuEditor, {
   skuFromApi,
@@ -269,6 +303,7 @@ import SkuEditor, {
   validateRows,
   type SkuRow
 } from '@/components/SkuEditor.vue'
+import RelativeTime from '@/components/RelativeTime.vue'
 import { useAdminStore } from '@/stores/admin'
 import { uploadImage } from '@/api/upload'
 import TableEmpty from '@/components/TableEmpty.vue'
@@ -295,6 +330,9 @@ const categoryOptions = computed(() => flattenLevel2Categories(categoryTree.valu
 const createVisible = ref(false)
 const editVisible = ref(false)
 const activeTab = ref('basic')
+const stockFlowSkuId = ref<number | undefined>()
+const stockFlows = ref<StockFlowRow[]>([])
+const stockFlowLoading = ref(false)
 const skuRows = ref<SkuRow[]>([])
 
 const createForm = reactive({
@@ -450,6 +488,8 @@ async function openEdit(id: number) {
   editVisible.value = true
   editLoading.value = true
   activeTab.value = 'basic'
+  stockFlows.value = []
+  stockFlowSkuId.value = undefined
   try {
     const spu = await getProduct(id)
     editForm.id = spu.id
@@ -466,11 +506,52 @@ async function openEdit(id: number) {
     if (!skuRows.value.length) {
       skuRows.value = [skuFromApi({ specJson: { dims: [{ name: '规格', value: '默认' }] }, price: 99, isDefault: 1, status: 1, available: 0 })]
     }
+    const firstSku = skuRows.value.find((s) => s.id)
+    if (firstSku?.id) {
+      stockFlowSkuId.value = firstSku.id
+      await loadStockFlows()
+    }
   } catch (e: any) {
     ElMessage.error(e.message || '加载失败')
     editVisible.value = false
   } finally {
     editLoading.value = false
+  }
+}
+
+async function onCopy(id: number) {
+  try {
+    await ElMessageBox.confirm('将复制该商品为草稿（含 SKU 与库存），是否继续？', '复制商品', {
+      type: 'info'
+    })
+  } catch {
+    return
+  }
+  try {
+    const result = await copyProduct(id)
+    ElMessage.success(`已复制，新商品 ID ${result?.spuId}`)
+    await load()
+    if (result?.spuId) {
+      openEdit(result.spuId)
+    }
+  } catch (e: any) {
+    ElMessage.error(e?.message || '复制失败')
+  }
+}
+
+async function loadStockFlows() {
+  if (!stockFlowSkuId.value) {
+    stockFlows.value = []
+    return
+  }
+  stockFlowLoading.value = true
+  try {
+    const res = await listStockFlows(stockFlowSkuId.value, { page: 1, size: 50 })
+    stockFlows.value = res?.list || []
+  } catch (e: any) {
+    ElMessage.error(e?.message || '加载库存记录失败')
+  } finally {
+    stockFlowLoading.value = false
   }
 }
 
@@ -645,6 +726,13 @@ onMounted(async () => {
   max-width: 640px;
 }
 .sku-actions {
+  margin-top: 16px;
+}
+.stock-flow-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
   margin-top: 16px;
 }
 .image-upload-row {

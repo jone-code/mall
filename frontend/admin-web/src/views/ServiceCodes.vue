@@ -44,6 +44,28 @@
       style="margin-bottom: 16px"
     />
 
+    <el-table
+      v-if="poolSummary.length"
+      :data="poolSummary"
+      size="small"
+      border
+      style="margin-bottom: 16px"
+    >
+      <el-table-column label="服务商品" min-width="200">
+        <template #default="{ row }">{{ spuLabel(row.spuId) }}</template>
+      </el-table-column>
+      <el-table-column prop="available" label="可用" width="80" />
+      <el-table-column prop="issued" label="已发放" width="88" />
+      <el-table-column prop="total" label="合计" width="80" />
+      <el-table-column label="状态" width="100">
+        <template #default="{ row }">
+          <el-tag :type="row.available > 0 ? 'success' : 'danger'" size="small">
+            {{ row.available > 0 ? '正常' : '耗尽' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+    </el-table>
+
     <el-table v-loading="loading" :data="rows" stripe>
       <template #empty>
         <TableEmpty description="暂无核销码" />
@@ -110,7 +132,7 @@
     </template>
   </el-dialog>
 
-  <el-dialog v-model="importVisible" title="批量导入核销码" width="520px">
+  <el-dialog v-model="importVisible" title="批量导入核销码" width="520px" @closed="importResult = null">
     <el-form label-width="96px" style="margin-bottom: 12px">
       <el-form-item label="服务商品" required>
         <el-select v-model="importSpuId" placeholder="请选择服务商品" filterable style="width: 100%">
@@ -129,6 +151,14 @@
       :rows="8"
       placeholder="每行一个核销码；留空行会自动跳过。也可留空由系统生成（每行留空则自动生成一条）"
     />
+    <el-alert
+      v-if="importResult"
+      :type="importResult.imported > 0 ? 'success' : 'warning'"
+      :closable="false"
+      show-icon
+      style="margin-top: 12px"
+      :title="`成功 ${importResult.imported}，重复 ${importResult.duplicate}，跳过 ${importResult.skipped}`"
+    />
     <template #footer>
       <el-button @click="importVisible = false">取消</el-button>
       <el-button type="primary" :loading="importing" @click="submitImport">导入</el-button>
@@ -145,9 +175,12 @@ import { listProducts, type AdminSpu } from '@/api/product'
 import {
   listServiceVerifyCodes,
   getServiceVerifyCodeStats,
+  getServiceVerifyCodePoolSummary,
   importServiceVerifyCodes,
   updateServiceVerifyCode,
-  type ServiceVerifyCode
+  type ServiceVerifyCode,
+  type ServiceVerifyPool,
+  type ImportCodesResult
 } from '@/api/serviceCode'
 
 const store = useAdminStore()
@@ -161,6 +194,7 @@ const total = ref(0)
 const status = ref('')
 const filterSpuId = ref<number | undefined>()
 const stats = ref({ available: 0 })
+const poolSummary = ref<ServiceVerifyPool[]>([])
 const serviceProducts = ref<AdminSpu[]>([])
 
 const formVisible = ref(false)
@@ -172,6 +206,7 @@ const importVisible = ref(false)
 const importText = ref('')
 const importSpuId = ref<number | undefined>()
 const importing = ref(false)
+const importResult = ref<ImportCodesResult | null>(null)
 
 function spuLabel(spuId?: number) {
   if (!spuId) return '—'
@@ -193,13 +228,15 @@ async function load() {
     }
     if (status.value) params.status = status.value
     if (filterSpuId.value) params.spuId = filterSpuId.value
-    const [listRes, statsRes] = await Promise.all([
+    const [listRes, statsRes, poolRes] = await Promise.all([
       listServiceVerifyCodes(params),
-      getServiceVerifyCodeStats(filterSpuId.value)
+      getServiceVerifyCodeStats(filterSpuId.value),
+      getServiceVerifyCodePoolSummary()
     ])
     rows.value = listRes.data?.list || []
     total.value = listRes.data?.total || 0
     stats.value = statsRes.data || { available: 0 }
+    poolSummary.value = poolRes.data || []
   } catch (e: any) {
     ElMessage.error(e?.message || '加载失败')
   } finally {
@@ -285,12 +322,11 @@ async function submitImport() {
     return
   }
   importing.value = true
+  importResult.value = null
   try {
     const res = await importServiceVerifyCodes({ spuId: importSpuId.value, codes })
-    ElMessage.success(`成功导入 ${res.data?.imported ?? 0} 条`)
-    importVisible.value = false
-    importText.value = ''
-    load()
+    importResult.value = res || null
+    await load()
   } catch (e: any) {
     ElMessage.error(e?.message || '导入失败')
   } finally {

@@ -69,6 +69,12 @@ const layoutChildren: RouteRecordRaw[] = [
     meta: { title: '用户评价', perm: 'order:read' }
   },
   {
+    path: 'sessions',
+    name: 'Sessions',
+    component: () => import('@/views/Sessions.vue'),
+    meta: { title: '登录设备', requiresAuth: true }
+  },
+  {
     path: 'audit',
     name: 'Audit',
     component: () => import('@/views/Audit.vue'),

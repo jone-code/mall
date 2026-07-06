@@ -61,6 +61,16 @@
           >
             <router-link to="/products">前往商品管理</router-link>
           </el-alert>
+          <el-alert
+            v-if="canOrder && (reviewStats?.badReviewCount ?? 0) > 0"
+            type="error"
+            :closable="false"
+            show-icon
+            style="margin-top: 8px"
+            :title="`近期待跟进差评 ${reviewStats?.badReviewCount} 条（1-2 星）`"
+          >
+            <router-link :to="{ path: '/reviews', query: { rating: '1' } }">查看差评</router-link>
+          </el-alert>
         </el-card>
       </el-col>
       <el-col :xs="24" :md="8">
@@ -86,16 +96,16 @@
 
     <el-row v-if="canOrder" :gutter="16" class="stat-row" v-loading="orderLoading">
       <el-col :xs="12" :sm="6">
-        <div class="stat-tile">
+        <router-link class="stat-tile link" :to="{ path: '/orders', query: { today: '1' } }">
           <div class="stat-label">今日订单</div>
           <div class="stat-value">{{ orderStats?.todayOrders ?? 0 }}</div>
-        </div>
+        </router-link>
       </el-col>
       <el-col :xs="12" :sm="6">
-        <div class="stat-tile">
+        <router-link class="stat-tile link" :to="{ path: '/orders', query: { today: '1' } }">
           <div class="stat-label">今日成交额</div>
           <div class="stat-value money">¥{{ money(orderStats?.todayGmv) }}</div>
-        </div>
+        </router-link>
       </el-col>
       <el-col :xs="12" :sm="6">
         <div class="stat-tile">
@@ -104,10 +114,10 @@
         </div>
       </el-col>
       <el-col :xs="12" :sm="6">
-        <div class="stat-tile">
+        <router-link class="stat-tile link" to="/members">
           <div class="stat-label">今日新用户</div>
           <div class="stat-value">{{ memberStats?.todayNewUsers ?? 0 }}</div>
-        </div>
+        </router-link>
       </el-col>
     </el-row>
 
@@ -213,6 +223,8 @@ import {
   getProductStats,
   getMemberStats,
   getOpsTodos,
+  getReviewStats,
+  type ReviewStats,
   type OrderStats,
   type OrderTrendPoint,
   type ProductStats,
@@ -233,6 +245,7 @@ const orderStats = ref<OrderStats | null>(null)
 const productStats = ref<ProductStats | null>(null)
 const memberStats = ref<MemberStats | null>(null)
 const todos = ref<OpsTodo | null>(null)
+const reviewStats = ref<ReviewStats | null>(null)
 const trendLoading = ref(false)
 const trendDays = ref(7)
 const trendPoints = ref<OrderTrendPoint[]>([])
@@ -301,6 +314,16 @@ async function loadProducts() {
   }
 }
 
+async function loadReviewStats() {
+  if (!canOrder.value) return
+  try {
+    const res = await getReviewStats()
+    reviewStats.value = res.data
+  } catch {
+    reviewStats.value = null
+  }
+}
+
 async function loadTrends() {
   if (!canOrder.value) return
   trendLoading.value = true
@@ -330,6 +353,7 @@ onMounted(() => {
   loadTodos()
   loadProducts()
   loadMembers()
+  loadReviewStats()
 })
 </script>
 
@@ -352,6 +376,15 @@ onMounted(() => {
   padding: 20px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   margin-bottom: 16px;
+}
+.stat-tile.link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.15s;
+}
+.stat-tile.link:hover {
+  box-shadow: 0 2px 10px rgba(64, 158, 255, 0.15);
 }
 .stat-label {
   color: var(--admin-color-text-secondary);

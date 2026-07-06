@@ -13,6 +13,7 @@ import com.comonon.mall.admin.service.PermissionService;
 import com.comonon.mall.admin.web.dto.AssignRolesRequest;
 import com.comonon.mall.admin.web.dto.CreateAdminUserRequest;
 import com.comonon.mall.admin.web.dto.ResetAdminPasswordRequest;
+import com.comonon.mall.common.web.PageResult;
 import com.comonon.mall.common.web.Result;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,12 +43,12 @@ public class AdminUserController {
 
     @GetMapping
     @RequirePermission("admin:user:read")
-    public Result<List<Map<String, Object>>> list(
+    public Result<PageResult<Map<String, Object>>> list(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
-        List<AdminUser> users = adminUserService.list(keyword, page, size);
-        List<Map<String, Object>> rows = users.stream().map(u -> {
+        PageResult<AdminUser> pageResult = adminUserService.list(keyword, page, size);
+        List<Map<String, Object>> rows = pageResult.getList().stream().map(u -> {
             Map<String, Object> m = new HashMap<>();
             m.put("id", u.getId());
             m.put("username", u.getUsername());
@@ -58,7 +59,7 @@ public class AdminUserController {
             m.put("lastLoginAt", u.getLastLoginAt());
             return m;
         }).toList();
-        return Result.ok(rows);
+        return Result.ok(PageResult.of(rows, pageResult.getPage(), pageResult.getSize(), pageResult.getTotal()));
     }
 
     @GetMapping("/{id}/roles")

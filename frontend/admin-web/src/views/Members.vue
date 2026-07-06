@@ -197,17 +197,25 @@ async function openDetail(id: number) {
 
 async function onStatusChange(row: MemberRow, status: number) {
   if (row.status === status) return
+  let reason = ''
   try {
-    await ElMessageBox.confirm(
-      `确认将用户 ${row.nickname || row.id} 状态改为「${memberStatusLabel(status)}」？`,
+    const { value } = await ElMessageBox.prompt(
+      `确认将用户 ${row.nickname || row.id} 状态改为「${memberStatusLabel(status)}」？可填写变更原因（可选）`,
       '确认操作',
-      { type: 'warning' }
+      {
+        type: 'warning',
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        inputPlaceholder: '变更原因（可选）',
+        inputValidator: () => true
+      }
     )
+    reason = value?.trim() || ''
   } catch {
     return
   }
   try {
-    await updateMemberStatus(row.id, status)
+    await updateMemberStatus(row.id, status, reason || undefined)
     row.status = status
     ElMessage.success('状态已更新')
   } catch {

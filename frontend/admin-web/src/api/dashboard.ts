@@ -65,3 +65,12 @@ export function getMemberStats() {
 export function getOpsTodos() {
   return http.get<OpsTodo>('/admin/ops/todos')
 }
+
+export interface ReviewStats {
+  badReviewCount: number
+  visibleCount: number
+}
+
+export function getReviewStats() {
+  return http.get<ReviewStats>('/admin/reviews/stats')
+}

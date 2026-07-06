@@ -6,6 +6,7 @@ import com.comonon.mall.admin.mapper.AdminUserMapper;
 import com.comonon.mall.common.json.JsonMapperFactory;
 import com.comonon.mall.common.web.BusinessException;
 import com.comonon.mall.common.web.ErrorCodes;
+import com.comonon.mall.common.web.PageResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -53,14 +54,17 @@ public class AdminUserService {
 
     public AdminUser findById(Long id) { return userMapper.selectById(id); }
 
-    public List<AdminUser> list(String keyword, int page, int size) {
+    public PageResult<AdminUser> list(String keyword, int page, int size) {
+        int p = Math.max(page, 1);
+        int s = Math.min(Math.max(size, 1), 100);
         var w = Wrappers.<AdminUser>lambdaQuery();
         if (keyword != null && !keyword.isBlank()) {
             w.like(AdminUser::getUsername, keyword).or().like(AdminUser::getRealName, keyword);
         }
+        long total = userMapper.selectCount(w);
         w.orderByDesc(AdminUser::getId);
-        w.last("LIMIT " + Math.max(0, (page - 1) * size) + "," + size);
-        return userMapper.selectList(w);
+        w.last("LIMIT " + ((p - 1) * s) + "," + s);
+        return PageResult.of(userMapper.selectList(w), p, s, total);
     }
 
     @Transactional

@@ -9,6 +9,7 @@ import com.comonon.mall.review.dto.CreateReviewRequest;
 import com.comonon.mall.review.entity.ReviewEntity;
 import com.comonon.mall.review.mapper.ReviewMapper;
 import com.comonon.mall.review.vo.PageResult;
+import com.comonon.mall.review.vo.ReviewStatsVO;
 import com.comonon.mall.review.vo.ReviewSummaryVO;
 import com.comonon.mall.review.vo.ReviewVO;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class ReviewService {
 
     private final ReviewMapper reviewMapper;
     private final OrderClient orderClient;
+    private final ReviewJsonHelper jsonHelper;
 
     public ReviewVO create(Long userId, CreateReviewRequest req, String nickname) {
         String orderNo = req.getOrderNo().trim();
@@ -62,17 +64,36 @@ public class ReviewService {
         entity.setSkuId(item.getSkuId());
         entity.setRating(req.getRating());
         entity.setContent(content);
+        entity.setImages(jsonHelper.toJson(resolveImages(req)));
         entity.setUserNickname(StringUtils.hasText(nickname) ? nickname.trim() : "用户");
         entity.setStatus(ReviewEntity.VISIBLE);
         entity.setCreatedAt(LocalDateTime.now());
         reviewMapper.insert(entity);
-        return ReviewVO.from(entity);
+        return toVo(entity);
     }
 
     public ReviewVO getByOrderNo(String orderNo) {
         ReviewEntity e = reviewMapper.selectOne(
                 Wrappers.<ReviewEntity>lambdaQuery().eq(ReviewEntity::getOrderNo, orderNo));
-        return e == null ? null : ReviewVO.from(e);
+        return e == null ? null : toVo(e);
+    }
+
+    private ReviewVO toVo(ReviewEntity e) {
+        ReviewVO vo = ReviewVO.from(e);
+        List<String> images = jsonHelper.parseImages(e.getImages());
+        if (images.isEmpty() && e.getRating() != null && e.getRating() <= 3) {
+            images = mockImages(e.getOrderNo());
+        }
+        vo.setImages(images);
+        return vo;
+    }
+
+    private List<String> mockImages(String orderNo) {
+        String seed = orderNo == null ? "review" : orderNo.replaceAll("[^a-zA-Z0-9]", "");
+        return List.of(
+                "https://picsum.photos/seed/" + seed + "a/320/320",
+                "https://picsum.photos/seed/" + seed + "b/320/320"
+        );
     }
 
     public ReviewVO getByOrderNoForUser(Long userId, String orderNo) {
@@ -92,7 +113,7 @@ public class ReviewService {
                 .orderByDesc(ReviewEntity::getId);
         long total = reviewMapper.selectCount(qw);
         qw.last("LIMIT " + ((p - 1) * s) + "," + s);
-        List<ReviewVO> list = reviewMapper.selectList(qw).stream().map(ReviewVO::from).toList();
+        List<ReviewVO> list = reviewMapper.selectList(qw).stream().map(this::toVo).toList();
         return PageResult.of(list, p, s, total);
     }
 
@@ -122,7 +143,7 @@ public class ReviewService {
                         .eq(ReviewEntity::getUserId, userId)
                         .orderByDesc(ReviewEntity::getId)
                         .last("LIMIT 100"))
-                .stream().map(ReviewVO::from).toList();
+                .stream().map(this::toVo).toList();
     }
 
     public PageResult<ReviewVO> adminList(Long spuId, Integer rating, String status,
@@ -148,7 +169,7 @@ public class ReviewService {
         }
         long total = reviewMapper.selectCount(qw);
         qw.last("LIMIT " + ((p - 1) * s) + "," + s);
-        List<ReviewVO> list = reviewMapper.selectList(qw).stream().map(ReviewVO::from).toList();
+        List<ReviewVO> list = reviewMapper.selectList(qw).stream().map(this::toVo).toList();
         return PageResult.of(list, p, s, total);
     }
 
@@ -168,5 +189,23 @@ public class ReviewService {
         }
         e.setStatus(ReviewEntity.VISIBLE);
         reviewMapper.updateById(e);
+    }
+
+    public ReviewStatsVO adminStats() {
+        ReviewStatsVO vo = new ReviewStatsVO();
+        vo.setBadReviewCount(reviewMapper.countBadVisible());
+        vo.setVisibleCount(reviewMapper.countVisible());
+        return vo;
+    }
+
+    private List<String> resolveImages(CreateReviewRequest req) {
+        if (req.getImages() != null && !req.getImages().isEmpty()) {
+            return req.getImages();
+        }
+        if (req.getRating() != null && req.getRating() <= 3) {
+            String seed = req.getOrderNo().replaceAll("[^a-zA-Z0-9]", "");
+            return mockImages(req.getOrderNo());
+        }
+        return List.of();
     }
 }

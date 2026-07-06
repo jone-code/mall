@@ -95,6 +95,19 @@ public class AdminProductProxyController {
         return proxy.forward("/admin/products/batch-status", request, body);
     }
 
+    @PostMapping("/products/{id}/copy")
+    @RequirePermission("product:write")
+    @AuditAction(value = "COPY_SPU", targetType = "spu")
+    public ResponseEntity<byte[]> copy(@PathVariable("id") Long id, HttpServletRequest request) {
+        return proxy.forward("/admin/products/" + id + "/copy", request, null);
+    }
+
+    @GetMapping("/skus/{skuId}/stock-flows")
+    @RequirePermission("product:read")
+    public ResponseEntity<byte[]> stockFlows(@PathVariable("skuId") Long skuId, HttpServletRequest request) {
+        return proxy.forward("/admin/skus/" + skuId + "/stock-flows", request, null);
+    }
+
     @PutMapping("/skus/{skuId}/stock")
     @RequirePermission("product:write")
     @AuditAction(value = "ADJUST_STOCK", targetType = "sku")

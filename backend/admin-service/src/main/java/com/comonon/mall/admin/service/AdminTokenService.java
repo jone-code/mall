@@ -1,6 +1,7 @@
 package com.comonon.mall.admin.service;
 
 import com.comonon.mall.admin.entity.AdminAuditLog;
+import com.comonon.mall.admin.vo.AdminSessionVO;
 import com.comonon.mall.common.security.JwtUtil;
 import com.comonon.mall.common.security.RedisKeys;
 import com.comonon.mall.common.web.BusinessException;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -194,6 +196,59 @@ public class AdminTokenService {
     public Set<String> listSessions(Long adminUserId) {
         Set<String> set = redis.opsForSet().members(RedisKeys.adminUserSessions(adminUserId));
         return set == null ? new HashSet<>() : set;
+    }
+
+    public List<AdminSessionVO> listSessionDetails(Long adminUserId, String currentSid) {
+        List<AdminSessionVO> result = new ArrayList<>();
+        for (String sid : listSessions(adminUserId)) {
+            Map<Object, Object> hash = redis.opsForHash().entries(RedisKeys.session(sid));
+            if (hash == null || hash.isEmpty()) {
+                continue;
+            }
+            AdminSessionVO vo = new AdminSessionVO();
+            vo.setSid(sid);
+            vo.setCreatedAt(parseEpoch(hash.get("createdAt")));
+            vo.setLastActiveAt(parseEpoch(hash.get("lastActiveAt")));
+            vo.setCurrent(sid.equals(currentSid));
+            result.add(vo);
+        }
+        result.sort((a, b) -> Long.compare(
+                b.getLastActiveAt() == null ? 0L : b.getLastActiveAt(),
+                a.getLastActiveAt() == null ? 0L : a.getLastActiveAt()));
+        return result;
+    }
+
+    public void kickSession(Long adminUserId, String sid, String currentSid) {
+        if (sid != null && sid.equals(currentSid)) {
+            throw new BusinessException(ErrorCodes.INVALID_CREDENTIALS, "不能踢出当前会话，请使用退出登录");
+        }
+        String sessionKey = RedisKeys.session(sid);
+        Map<Object, Object> hash = redis.opsForHash().entries(sessionKey);
+        if (hash == null || hash.isEmpty()) {
+            throw new BusinessException(ErrorCodes.INVALID_CREDENTIALS, "会话不存在或已失效");
+        }
+        Object uid = hash.get("adminUserId");
+        if (uid == null || !String.valueOf(adminUserId).equals(uid.toString())) {
+            throw new BusinessException(ErrorCodes.PERMISSION_DENIED, "无权操作该会话");
+        }
+        Object accessJti = hash.get("accessJti");
+        if (accessJti != null) {
+            redis.opsForValue().set(RedisKeys.jwtBlacklist(accessJti.toString()), "1",
+                    Duration.ofSeconds(accessTtlSeconds));
+        }
+        redis.delete(sessionKey);
+        redis.opsForSet().remove(RedisKeys.adminUserSessions(adminUserId), sid);
+    }
+
+    private static Long parseEpoch(Object value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     @Data

@@ -145,3 +145,26 @@ export function spuStatusLabel(s?: number) {
   if (s === 2) return '下架'
   return '草稿'
 }
+
+export interface StockFlowRow {
+  id: number
+  skuId: number
+  orderNo?: string
+  changeType: string
+  deltaAvailable?: number
+  deltaFrozen?: number
+  availableAfter?: number
+  frozenAfter?: number
+  operatorType?: string
+  operatorId?: string
+  remark?: string
+  createdAt?: string
+}
+
+export function listStockFlows(skuId: number, params?: { page?: number; size?: number }) {
+  return http.get<PageResult<StockFlowRow>>(`/admin/skus/${skuId}/stock-flows`, { params })
+}
+
+export function copyProduct(id: number) {
+  return http.post<{ spuId: number; skuId: number }>(`/admin/products/${id}/copy`)
+}

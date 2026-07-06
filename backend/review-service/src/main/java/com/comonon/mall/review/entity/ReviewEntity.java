@@ -21,6 +21,8 @@ public class ReviewEntity {
     private Long skuId;
     private Integer rating;
     private String content;
+    /** JSON 数组字符串，晒图 URL */
+    private String images;
     private String userNickname;
     private String status;
     private LocalDateTime createdAt;

@@ -9,7 +9,9 @@ import com.comonon.mall.order.dto.UpdateServiceVerifyCodeRequest;
 import com.comonon.mall.order.entity.ServiceVerifyCodeEntity;
 import com.comonon.mall.order.mapper.ServiceVerifyCodeMapper;
 import com.comonon.mall.order.vo.FulfillmentVO;
+import com.comonon.mall.order.vo.ImportCardsResultVO;
 import com.comonon.mall.order.vo.ServiceVerifyCodeVO;
+import com.comonon.mall.order.vo.VirtualCardPoolVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,9 +61,9 @@ public class ServiceVerifyCodeService {
     }
 
     @Transactional
-    public int importCodes(ImportServiceVerifyCodesRequest req) {
+    public ImportCardsResultVO importCodes(ImportServiceVerifyCodesRequest req) {
         assertServiceSpu(req.getSpuId());
-        int n = 0;
+        ImportCardsResultVO result = new ImportCardsResultVO();
         LocalDateTime now = LocalDateTime.now();
         for (ImportServiceVerifyCodesRequest.CodeItem item : req.getCodes()) {
             String code = item.getVerifyCode();
@@ -77,13 +79,24 @@ public class ServiceVerifyCodeService {
             e.setCreatedAt(now);
             try {
                 mapper.insert(e);
-                n++;
+                result.setImported(result.getImported() + 1);
             } catch (Exception ex) {
-                // duplicate verify_code skip
+                result.setDuplicate(result.getDuplicate() + 1);
             }
         }
         syncPoolStock(req.getSpuId());
-        return n;
+        return result;
+    }
+
+    public List<VirtualCardPoolVO> poolSummary() {
+        return mapper.poolSummary().stream().map(row -> {
+            VirtualCardPoolVO vo = new VirtualCardPoolVO();
+            vo.setSpuId(((Number) row.get("spuId")).longValue());
+            vo.setAvailable(((Number) row.get("available")).longValue());
+            vo.setIssued(((Number) row.get("issued")).longValue());
+            vo.setTotal(((Number) row.get("total")).longValue());
+            return vo;
+        }).toList();
     }
 
     @Transactional

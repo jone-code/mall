@@ -33,6 +33,12 @@ public class AdminServiceVerifyCodeProxyController {
         return proxy.forward("/admin/service-verify-codes/stats", request, null);
     }
 
+    @GetMapping("/service-verify-codes/pool-summary")
+    @RequirePermission("card:read")
+    public ResponseEntity<byte[]> poolSummary(HttpServletRequest request) {
+        return proxy.forward("/admin/service-verify-codes/pool-summary", request, null);
+    }
+
     @PostMapping("/service-verify-codes/import")
     @RequirePermission("card:import")
     @AuditAction(value = "IMPORT_SERVICE_CODES", targetType = "service_verify_code")
