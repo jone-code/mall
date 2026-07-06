@@ -9,8 +9,8 @@
             placeholder="搜索用户名 / 姓名"
             clearable
             style="width: 240px"
-            @keyup.enter="load"
-            @clear="load"
+            @keyup.enter="reload"
+            @clear="reload"
           />
           <el-button v-if="canCreate" type="primary" @click="openCreate">新增账号</el-button>
         </div>
@@ -48,6 +48,18 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <div class="pager">
+      <el-pagination
+        v-model:current-page="page"
+        v-model:page-size="size"
+        :total="total"
+        :page-sizes="[20, 50]"
+        layout="total, sizes, prev, pager, next"
+        @current-change="load"
+        @size-change="reload"
+      />
+    </div>
   </el-card>
 
   <el-dialog v-model="createVisible" title="新增管理账号" width="520px" destroy-on-close>
@@ -133,19 +145,28 @@ const canResetPassword = computed(() => store.isSuperAdmin)
 const loading = ref(false)
 const keyword = ref('')
 const rows = ref<AdminUserRow[]>([])
+const page = ref(1)
+const size = ref(20)
+const total = ref(0)
 
 async function load() {
   loading.value = true
   try {
     const { data } = await listAdminUsers({
       keyword: keyword.value || undefined,
-      page: 1,
-      size: 50
+      page: page.value,
+      size: size.value
     })
-    rows.value = data || []
+    rows.value = data?.list || []
+    total.value = data?.total || 0
   } finally {
     loading.value = false
   }
+}
+
+function reload() {
+  page.value = 1
+  load()
 }
 
 const createVisible = ref(false)
@@ -310,5 +331,10 @@ onMounted(load)
   font-size: 13px;
   color: #909399;
   line-height: 1.5;
+}
+.pager {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

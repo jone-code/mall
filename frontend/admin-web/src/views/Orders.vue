@@ -358,6 +358,12 @@ function applyRouteQuery() {
   orderNo.value = (q.orderNo as string) || ''
   const uid = q.userId ? Number(q.userId) : undefined
   userId.value = uid && !Number.isNaN(uid) ? uid : undefined
+  if (q.today === '1') {
+    const today = new Date().toISOString().slice(0, 10)
+    dateRange.value = [today, today]
+  } else if (q.from && q.to) {
+    dateRange.value = [String(q.from), String(q.to)]
+  }
 }
 
 async function load() {

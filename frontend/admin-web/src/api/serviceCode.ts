@@ -26,11 +26,28 @@ export function getServiceVerifyCodeStats(spuId?: number) {
   })
 }
 
+export interface ServiceVerifyPool {
+  spuId: number
+  available: number
+  issued: number
+  total: number
+}
+
+export interface ImportCodesResult {
+  imported: number
+  duplicate: number
+  skipped: number
+}
+
+export function getServiceVerifyCodePoolSummary() {
+  return http.get<ServiceVerifyPool[]>('/admin/service-verify-codes/pool-summary')
+}
+
 export function importServiceVerifyCodes(data: {
   spuId: number
   codes: { verifyCode?: string }[]
 }) {
-  return http.post<{ imported: number }>('/admin/service-verify-codes/import', data)
+  return http.post<ImportCodesResult>('/admin/service-verify-codes/import', data)
 }
 
 export function updateServiceVerifyCode(

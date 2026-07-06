@@ -49,6 +49,7 @@
         <div class="title">{{ pageTitle }}</div>
         <div class="actions">
           <EnvBadge style="margin-right: 12px" />
+          <router-link to="/sessions" class="sessions-link">登录设备</router-link>
           <span class="username">{{ store.profile?.realName || store.profile?.username || '管理员' }}</span>
           <el-button link @click="logout">退出</el-button>
         </div>
@@ -359,6 +360,18 @@ async function logout() {
 }
 
 .username {
+  margin-right: 12px;
+  color: var(--admin-color-text-secondary);
+}
+.sessions-link {
+  margin-right: 12px;
+  font-size: 13px;
+  color: var(--admin-color-primary);
+  text-decoration: none;
+}
+.sessions-link:hover {
+  text-decoration: underline;
+}
   color: var(--admin-color-text-secondary);
   font-size: 14px;
 }

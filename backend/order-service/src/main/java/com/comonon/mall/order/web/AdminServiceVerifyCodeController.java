@@ -7,8 +7,10 @@ import com.comonon.mall.order.dto.UpdateServiceVerifyCodeRequest;
 import com.comonon.mall.order.dto.VerifyServiceRequest;
 import com.comonon.mall.order.service.OrderService;
 import com.comonon.mall.order.service.ServiceVerifyCodeService;
+import com.comonon.mall.order.vo.ImportCardsResultVO;
 import com.comonon.mall.order.vo.OrderVO;
 import com.comonon.mall.order.vo.ServiceVerifyCodeVO;
+import com.comonon.mall.order.vo.VirtualCardPoolVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,9 +50,14 @@ public class AdminServiceVerifyCodeController {
         return Result.ok(Map.of("available", available));
     }
 
+    @GetMapping("/service-verify-codes/pool-summary")
+    public Result<List<VirtualCardPoolVO>> poolSummary() {
+        return Result.ok(serviceVerifyCodeService.poolSummary());
+    }
+
     @PostMapping("/service-verify-codes/import")
-    public Result<Map<String, Integer>> importCodes(@Valid @RequestBody ImportServiceVerifyCodesRequest req) {
-        return Result.ok(Map.of("imported", serviceVerifyCodeService.importCodes(req)));
+    public Result<ImportCardsResultVO> importCodes(@Valid @RequestBody ImportServiceVerifyCodesRequest req) {
+        return Result.ok(serviceVerifyCodeService.importCodes(req));
     }
 
     @PutMapping("/service-verify-codes/{id}")

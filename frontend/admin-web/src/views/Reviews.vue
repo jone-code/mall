@@ -47,7 +47,22 @@
           <span class="stars">{{ '★'.repeat(row.rating) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="content" label="内容" min-width="220" show-overflow-tooltip />
+      <el-table-column prop="content" label="内容" min-width="180" show-overflow-tooltip />
+      <el-table-column label="晒图" width="120">
+        <template #default="{ row }">
+          <div v-if="row.images?.length" class="review-images">
+            <el-image
+              v-for="(url, i) in row.images.slice(0, 3)"
+              :key="i"
+              :src="url"
+              :preview-src-list="row.images"
+              fit="cover"
+              class="review-thumb"
+            />
+          </div>
+          <span v-else class="muted">—</span>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" width="90">
         <template #default="{ row }">
           <el-tag :type="row.status === 'HIDDEN' ? 'info' : 'success'" size="small">
@@ -99,7 +114,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { hideReview, unhideReview, listReviews, type Review } from '@/api/review'
 import RelativeTime from '@/components/RelativeTime.vue'
@@ -107,6 +123,7 @@ import TableEmpty from '@/components/TableEmpty.vue'
 import { useAdminStore } from '@/stores/admin'
 
 const store = useAdminStore()
+const route = useRoute()
 const canWrite = computed(() => store.hasPermission('order:write'))
 
 const loading = ref(false)
@@ -164,8 +181,30 @@ async function onUnhide(id: number) {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  const q = route.query
+  if (q.rating) {
+    const r = Number(q.rating)
+    if (!Number.isNaN(r)) filterRating.value = r
+  }
+  load()
+})
 </script>
+
+<style scoped>
+.review-images {
+  display: flex;
+  gap: 4px;
+}
+.review-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+}
+.muted {
+  color: #909399;
+}
+</style>
 
 <style scoped>
 .card-head {

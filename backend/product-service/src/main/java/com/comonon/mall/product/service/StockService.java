@@ -1,11 +1,15 @@
 package com.comonon.mall.product.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.comonon.mall.common.api.ErrorCode;
 import com.comonon.mall.common.exception.BizException;
 import com.comonon.mall.product.dto.StockLockRequest;
 import com.comonon.mall.product.entity.SkuStock;
 import com.comonon.mall.product.entity.StockFlow;
+import com.comonon.mall.product.vo.PageResult;
+import com.comonon.mall.product.vo.StockFlowVO;
 import com.comonon.mall.product.entity.StockLock;
 import com.comonon.mall.product.mapper.SkuMapper;
 import com.comonon.mall.product.mapper.SkuStockMapper;
@@ -77,6 +81,21 @@ public class StockService {
         result.put("available", target);
         result.put("version", stock.getVersion());
         return result;
+    }
+
+    public PageResult<StockFlowVO> listFlows(Long skuId, int page, int size) {
+        if (skuMapper.selectById(skuId) == null) {
+            throw BizException.of(ErrorCode.SKU_NOT_FOUND, "SKU 不存在");
+        }
+        int p = Math.max(page, 1);
+        int s = Math.min(Math.max(size, 1), 50);
+        LambdaQueryWrapper<StockFlow> qw = new LambdaQueryWrapper<StockFlow>()
+                .eq(StockFlow::getSkuId, skuId)
+                .orderByDesc(StockFlow::getId);
+        Page<StockFlow> mpPage = new Page<>(p, s);
+        stockFlowMapper.selectPage(mpPage, qw);
+        List<StockFlowVO> list = mpPage.getRecords().stream().map(StockFlowVO::from).toList();
+        return PageResult.of(list, p, s, mpPage.getTotal());
     }
 
     private void writeFlow(Long skuId, String changeType, int deltaAvailable, int deltaFrozen,

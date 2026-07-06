@@ -8,6 +8,7 @@ export interface Review {
   skuId?: number
   rating: number
   content: string
+  images?: string[]
   userNickname?: string
   status?: string
   createdAt: string
@@ -38,4 +39,8 @@ export function hideReview(id: number) {
 
 export function unhideReview(id: number) {
   return http.post(`/admin/reviews/${id}/unhide`)
+}
+
+export function getReviewStats() {
+  return http.get<{ badReviewCount: number; visibleCount: number }>('/admin/reviews/stats')
 }

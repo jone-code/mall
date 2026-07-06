@@ -47,8 +47,8 @@ export function getMemberDetail(id: number) {
   return http.get<MemberDetail>(`/admin/members/${id}`)
 }
 
-export function updateMemberStatus(id: number, status: number) {
-  return http.put(`/admin/members/${id}/status`, { status })
+export function updateMemberStatus(id: number, status: number, reason?: string) {
+  return http.put(`/admin/members/${id}/status`, { status, reason })
 }
 
 export function memberStatusLabel(status?: number) {

@@ -1,4 +1,5 @@
 import http from '@/api/http'
+import type { PageResult } from '@/api/types'
 
 export interface AdminUserRow {
   id: number
@@ -11,7 +12,7 @@ export interface AdminUserRow {
 }
 
 export function listAdminUsers(params: { keyword?: string; page?: number; size?: number }) {
-  return http.get<AdminUserRow[]>('/admin/users', { params })
+  return http.get<PageResult<AdminUserRow>>('/admin/users', { params })
 }
 
 export function createAdminUser(data: {

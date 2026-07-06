@@ -14,4 +14,10 @@ public interface ReviewMapper extends BaseMapper<ReviewEntity> {
     @Select("SELECT COUNT(*) AS cnt, COALESCE(AVG(rating),0) AS avgRating FROM order_reviews "
             + "WHERE spu_id=#{spuId} AND status='VISIBLE'")
     Map<String, Object> aggregateBySpu(@Param("spuId") Long spuId);
+
+    @Select("SELECT COUNT(*) FROM order_reviews WHERE status='VISIBLE' AND rating <= 2")
+    long countBadVisible();
+
+    @Select("SELECT COUNT(*) FROM order_reviews WHERE status='VISIBLE'")
+    long countVisible();
 }

@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class CreateReviewRequest {
     @NotBlank(message = "订单号不能为空")
@@ -20,4 +22,7 @@ public class CreateReviewRequest {
     @NotBlank(message = "评价内容不能为空")
     @Size(max = 1000)
     private String content;
+
+    /** 晒图 URL（可选；未传时低分评价自动生成 Mock 图） */
+    private List<String> images;
 }
