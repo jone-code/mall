@@ -250,6 +250,7 @@ pnpm dev:mp-weixin
 
 | 文档 | 说明 |
 |------|------|
+| [docs/FEATURES.md](docs/FEATURES.md) | **项目功能介绍（含 C 端 / 管理端配图）** |
 | [docs/roadmap.md](docs/roadmap.md) | 开发路线图与阶段规划 |
 | [docs/design-index.md](docs/design-index.md) | 设计文档索引 |
 | [docs/ops-polish-plan.md](docs/ops-polish-plan.md) | 运营体验打磨计划 |
